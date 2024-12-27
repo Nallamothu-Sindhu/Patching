@@ -1,0 +1,62 @@
+---
+- name: Test my custom module
+  hosts: target
+  remote_user: ubuntu
+  become: yes
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    # Ensure the /backup directory exists
+    - name: Ensure /backup directory exists
+      file:
+        path: /backup
+        state: directory
+        mode: '0755'
+
+    # Ensure the /final directory exists
+    - name: Ensure /final directory exists
+      file:
+        path: /final
+        state: directory
+        mode: '0755'
+
+    
+
+    # Run the custom pre-patch module
+    - name: Run the my custom module pre reboot
+      pre_patch_module:
+        backup_path: /final  # Specify the backup path
+        ip_address: "{{ ansible_ssh_host }}"
+          # server: "{{ ansible_ssh_host }}"
+
+      register: mount_backup_result
+      when: ansible_action == "pre"
+
+
+    # Run the custom post-patch module
+    - name: Run the my custom module post reboot
+      post_patch_module:
+        backup_path: /final # Specify the backup path
+        ip_address: "{{ ansible_ssh_host }}"
+      register: mount_backup_result_post
+      when: ansible_action == "post"
+
+    # Fetch the postpatch output file from the target to the control node
+    - name: Fetch prepatch backup file(s)
+      fetch:
+        src: "/final/{{ ansible_ssh_host }}_postpatch_output.csv"
+        dest: "/home/ubuntu/postpatch_output_{{ ansible_ssh_host }}.csv"
+        flat: yes
+      when: ansible_action == "post"
+
+
+    - name: Find the folder with prefix "CSV"
+      find:
+        paths: /final
+        patterns: "{{ ansible_ssh_host }}_CSV_*"
+        file_type: directory
+      register: csv_folder
+
+    

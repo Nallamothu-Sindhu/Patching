@@ -1,0 +1,112 @@
+# Copyright: (c) 2024, Nibinsha A <nibinsha.a@hcltech.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+from __future__ import (absolute_import, division, print_function)
+__metaclass__ = type
+
+
+DOCUMENTATION = r'''
+---
+module: module_pre_patch
+
+short_description: backup the files before reboot the machine
+
+version_added: "1.0.0"
+
+description: This Module provides functionality to backup the whole details as sperate file finally is into a folder.
+
+options:
+    backup_path:
+        description: Path to the directory where backup files will be stored
+        required: true
+        type: str
+
+    action:
+        description: The action to perform. "backup" to create a backup of the current mount list, "compare" to
+                     compare the current mount list with the most recent backup.
+        required: true
+        type: str
+        choices: ['backup','compare']
+
+    backup_path:
+        description: ip address of target machine
+        required: true
+        type: str
+
+author:
+    - Nibinsha'''
+
+
+EXAMPLES = r'''
+# Backup the current mount list
+ - name: Run the my custom module pre reboot
+   module_pre_patch:
+     backup_path: /backup
+     action: backup
+     ip_address: "{{ ansible_ssh_host }}"
+'''
+
+RETURN = r'''
+[3.104.105.194] => {
+    "backup_file_system_fstab": {
+        "changed": true,
+        "msg": "backup mount list to /backup/3.104.105.194_Prepatch_2024-07-10/fstab_file_PRE_PATCH.txt"
+    },
+    "backup_file_system_mount": {
+        "changed": true,
+        "msg": "backup mount list to /backup/3.104.105.194_Prepatch_2024-07-10/mount_file_PRE_PATCH.txt"
+    },
+    "backup_services": {
+        "changed": true,
+        "msg": "Pre-patch backup of services list to /backup/3.104.105.194_Prepatch_2024-07-10"
+    },
+    "changed": false,
+    "invocation": {
+        "module_args": {
+            "action": "backup",
+            "backup_path": "/backup",
+            "ip_address": "3.104.105.194"
+        }
+    },
+    "message": "",
+    "original_message": ""
+'''
+
+from ansible.module_utils.basic import AnsibleModule
+import os
+import sys
+module_path = os.path.dirname(__file__)
+sys.path.insert(0,module_path)
+
+from ansible.module_utils.file_system_fstab import backup_fstab_list
+from ansible.module_utils.file_system_mount import backup_mount_list
+from ansible.module_utils.list_softwares import backup_services_list
+from ansible.module_utils.get_info_and_dateTime import backup_info_dateTime
+
+def main():
+    module_args = dict(
+           backup_path=dict(type='str', required=True),
+           action=dict(type='str', required=True),
+           ip_address=dict(type='str', required=True)
+        )
+    module = AnsibleModule(
+        argument_spec=module_args,
+    )
+    backup_path = module.params['backup_path']
+    action = module.params['action']
+    ip_address = module.params['ip_address']
+    backup_file_system_fstab = backup_fstab_list(backup_path,ip_address)
+    backup_file_system_mount = backup_mount_list(backup_path,ip_address)
+    backup_services = backup_services_list(backup_path, ip_address)
+    backup_info_dateTime(backup_path, ip_address)
+
+    result = dict(
+            changed=False,
+            original_message='',
+            message = '',
+            backup_file_system_fstab = backup_file_system_fstab,
+            backup_file_system_mount = backup_file_system_mount,
+            backup_services = backup_services
+      )
+    module.exit_json(**result)
+main()

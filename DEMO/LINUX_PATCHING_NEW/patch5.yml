@@ -1,0 +1,85 @@
+---
+- name: Test custom module with pre and post tasks
+  hosts: all
+  remote_user: ansible_user
+  become: yes
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tasks:
+    # Ensure the /backup directory exists
+    - name: Ensure /backup directory exists
+      file:
+        path: /backup
+        state: directory
+        mode: '0755'
+    # Ensure the /final directory exists
+    - name: Ensure /final directory exists
+      file:
+        path: /final
+        state: directory
+        mode: '0755'
+    # Run the custom pre-patch module
+    - name: Run the custom module pre reboot
+      pre_patch_module:
+        backup_path: /final  # Specify the backup path
+        ip_address: "{{ ansible_ssh_host }}"
+      register: mount_backup_result
+    # Run the custom post-patch module
+    - name: Run the custom module post reboot
+      post_patch_module:
+        backup_path: /final  # Specify the backup path
+        ip_address: "{{ ansible_ssh_host }}"
+      register: mount_backup_result_post
+    # Find the folder with the dynamic name containing IP and date
+    - name: Find the folder with IP and date in the name
+      find:
+        paths: "/final"
+        patterns: "{{ ansible_ssh_host }}_CSV_*"
+        file_type: directory
+      register: found_folders
+    # Debug to show found folders (Optional)
+    - name: Show found folders
+      debug:
+        var: found_folders.files
+    # Notify if no matching folders are found
+    - name: Notify if no matching folders are found
+      debug:
+        msg: "No matching folders found in /final for {{ ansible_ssh_host }}"
+      when: found_folders.matched == 0
+    # Fetch files from the discovered folder(s)
+    - name: Fetch post-patch backup files
+      fetch:
+        src: "{{ item.path }}/ticketNum_{{ ansible_ssh_host }}_output.csv"
+        dest: "/home/ubuntu/postpatch_output_{{ ansible_ssh_host }}.csv"
+        flat: yes
+      loop: "{{ found_folders.files }}"
+      when: found_folders.matched > 0
+    # Generate a single unique filename for combined CSV (for all hosts)
+    - name: Generate unique filename for combined CSV
+      set_fact:
+        combined_csv_file: "/home/ubuntu/output_of_combined_CSV_{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.csv"
+    # Find all CSV files in the directory
+    - name: Find all CSV files to combine
+      delegate_to: localhost
+      find:
+        paths: "/home/ubuntu"
+        patterns: "*.csv"
+      register: csv_files
+    # Debug to show all found CSV files
+    - name: Show all matched CSV files
+      debug:
+        var: csv_files.files
+ 
+    # Combine all fetched CSV files into one unique file
+    - name: Combine fetched files into a single CSV
+      delegate_to: localhost
+      shell: |
+        cat {{ csv_files.files | map(attribute='path') | join(' ') }} > "{{ combined_csv_file }}"
+      args:
+        creates: "{{ combined_csv_file }}"
+      when: csv_files.matched > 0
+    # Show the combined CSV file name
+    - name: Show combined CSV file name
+      debug:
+        msg: "Combined CSV file created: {{ combined_csv_file }}"
