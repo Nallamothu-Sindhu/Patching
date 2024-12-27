@@ -1,0 +1,122 @@
+- name: Post-patch system checks
+  hosts: localhost
+  tasks:
+    - name: Display date
+      command: date
+      register: date_output
+      tags:
+        - Date
+ 
+    - name: Display date output
+      debug:
+        var: date_output.stdout
+      tags:
+        - Date
+ 
+    - name: Gather host info
+      command: hostname
+      register: host_output
+      tags:
+        - Host
+ 
+    - name: Display host info
+      debug:
+        var: host_output.stdout
+      tags:
+        - Host
+ 
+    - name: Gather user info
+      command: whoami
+      register: user_output
+      tags:
+        - User
+ 
+    - name: Display user info
+      debug:
+        var: user_output.stdout
+      tags:
+        - User
+ 
+    - name: Gather uptime
+      command: uptime
+      register: uptime_output
+      tags:
+        - Uptime
+ 
+    - name: Display uptime
+      debug:
+        var: uptime_output.stdout
+      tags:
+        - Uptime
+ 
+    - name: Check last reboot
+      command: last reboot
+      register: last_reboot_output
+      tags:
+        - Last Reboot
+ 
+    - name: Display last reboot
+      debug:
+        var: last_reboot_output.stdout
+      tags:
+        - Last Reboot
+ 
+    - name: Check kernel version
+      command: uname -r
+      register: kernel_version_output
+      tags:
+        - Kernel Version
+ 
+    - name: Display kernel version
+      debug:
+        var: kernel_version_output.stdout
+      tags:
+        - Kernel Version
+ 
+    - name: Get route IP
+      command: ip route
+      register: route_ip_output
+      tags:
+        - Route IP
+ 
+    - name: Display route IP
+      debug:
+        var: route_ip_output.stdout
+      tags:
+        - Route IP
+ 
+    - name: Get fstab details
+      command: cat /etc/fstab
+      register: fstab_output
+      tags:
+        - Fstab
+ 
+    - name: Display fstab details
+      debug:
+        var: fstab_output.stdout
+      tags:
+        - Fstab
+ 
+    - name: Validate NFS
+      command: showmount -e
+      register: nfs_output
+      tags:
+        - NFS Validation
+ 
+    - name: Display NFS validation
+      debug:
+        var: nfs_output.stdout
+      tags:
+        - NFS Validation
+ 
+    - name: List started services
+      command: systemctl list-units --type=service --state=running
+      register: started_services_output
+      tags:
+        - Started services
+ 
+    - name: Display started services
+      debug:
+        var: started_services_output.stdout
+      tags:
+        - Started services

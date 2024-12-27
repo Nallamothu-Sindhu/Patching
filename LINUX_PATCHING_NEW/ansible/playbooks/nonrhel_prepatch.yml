@@ -1,0 +1,136 @@
+- name: Pre-patch system checks
+  hosts: localhost
+  tasks:
+    - name: Gather Hostname info
+      command: hostname
+      register: hostname_output
+      tags:
+        - Hostname info
+ 
+    - name: Display Hostname info
+      debug:
+        var: hostname_output.stdout
+      tags:
+        - Hostname info
+ 
+    - name: Check current kernel version
+      command: uname -r
+      register: kernel_version_output
+      tags:
+        - Current Kernel Version Installed
+ 
+    - name: Display current kernel version
+      debug:
+        var: kernel_version_output.stdout
+      tags:
+        - Current Kernel Version Installed
+ 
+    - name: Get current filesystem utilization
+      command: df -Th
+      register: fs_utilization_output
+      tags:
+        - Current FS Utilization
+ 
+    - name: Display filesystem utilization
+      debug:
+        var: fs_utilization_output.stdout
+      tags:
+        - Current FS Utilization
+ 
+    - name: Get fstab details
+      command: cat /etc/fstab
+      register: fstab_output
+      tags:
+        - Fstab detail
+ 
+    - name: Display fstab details
+      debug:
+        var: fstab_output.stdout
+      tags:
+        - Fstab detail
+ 
+    - name: List available disks
+      command: lsblk
+      register: disks_output
+      tags:
+        - Disks available
+ 
+    - name: Display available disks
+      debug:
+        var: disks_output.stdout
+      tags:
+        - Disks available
+ 
+    - name: Check memory and swap
+      command: free -gh
+      register: memory_output
+      tags:
+        - Memory and swap
+ 
+    - name: Display memory and swap
+      debug:
+        var: memory_output.stdout
+      tags:
+        - Memory and swap
+ 
+    - name: Check passwd file
+      command: cat /etc/passwd
+      register: passwd_output
+      tags:
+        - passwd, groups and sudoers
+ 
+    - name: Display passwd file
+      debug:
+        var: passwd_output.stdout
+      tags:
+        - passwd, groups and sudoers
+ 
+    - name: Check groups file
+      command: cat /etc/group
+      register: group_output
+      tags:
+        - passwd, groups and sudoers
+ 
+    - name: Display groups file
+      debug:
+        var: group_output.stdout
+      tags:
+        - passwd, groups and sudoers
+ 
+    - name: Check sudoers file
+      command: cat /etc/sudoers
+      register: sudoers_output
+      tags:
+        - passwd, groups and sudoers
+ 
+    - name: Display sudoers file
+      debug:
+        var: sudoers_output.stdout
+      tags:
+        - passwd, groups and sudoers
+ 
+    
+ 
+    - name: List running services
+      command: systemctl list-units --type=service --state=running
+      register: running_services_output
+      tags:
+        - Running services
+ 
+    - name: Display running services
+      debug:
+        var: running_services_output.stdout
+      tags:
+        - Running services
+ 
+    - name: List stopped services
+      command: systemctl list-units --type=service --state=stopped
+      register: stopped_services_output
+      tags:
+        - Stopped services
+ 
+    - name: Display stopped services
+      debug:
+        var: stopped_services_output.stdout
+      tags:
+        - Stopped services

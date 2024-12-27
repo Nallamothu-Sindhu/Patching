@@ -1,0 +1,110 @@
+---
+- hosts: dynamic
+  tasks:
+    - name: Display date
+      command: date
+      register: date_output
+      tags:
+        - Date
+ 
+    - name: Display date output
+      debug:
+        msg: "{{ date_output.stdout }}"
+      tags:
+        - Date
+ 
+    - name: Gather host info
+      command: hostname
+      register: host_output
+      tags:
+        - Host
+ 
+    - name: Display host info
+      debug:
+        msg: "{{ host_output.stdout }}"
+      tags:
+        - Host
+ 
+    - name: Gather user info
+      command: whoami
+      register: user_output
+      tags:
+        - User
+ 
+    - name: Display user info
+      debug:
+        msg: "{{ user_output.stdout }}"
+      tags:
+        - User
+ 
+    - name: Gather uptime
+      command: uptime
+      register: uptime_output
+      tags:
+        - Uptime
+ 
+    - name: Display uptime
+      debug:
+        msg: "{{ uptime_output.stdout }}"
+      tags:
+        - Uptime
+ 
+    - name: Check last reboot
+      command: last reboot
+      register: last_reboot_output
+      tags:
+        - Last Reboot
+ 
+    - name: Display last reboot
+      debug:
+        msg: "{{ last_reboot_output.stdout }}"
+      tags:
+        - Last Reboot
+ 
+    - name: Check kernel version
+      command: uname -r
+      register: kernel_version_output
+      tags:
+        - Kernel Version
+ 
+    - name: Display kernel version
+      debug:
+        msg: "{{ kernel_version_output.stdout }}"
+      tags:
+        - Kernel Version
+ 
+    - name: Get route IP
+      command: ip route
+      register: route_ip_output
+      tags:
+        - Route IP
+ 
+    - name: Display route IP
+      debug:
+        msg: "{{ route_ip_output.stdout }}"
+      tags:
+        - Route IP
+ 
+    - name: Get fstab details
+      command: cat /etc/fstab
+      register: fstab_output
+      tags:
+        - Fstab
+ 
+    - name: Display fstab details
+      debug:
+        msg": "{{ fstab_output.stdout }}"
+      tags:
+        - Fstab
+ 
+    - name: List started services
+      command: systemctl list-units --type=service --state=running
+      register: started_services_output
+      tags:
+        - Started services
+ 
+    - name: Display started services
+      debug:
+        msg: "{{ started_services_output.stdout }}"
+      tags:
+        - Started services

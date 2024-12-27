@@ -1,0 +1,187 @@
+---
+- hosts: dynamic
+  tasks:
+    - name: Gather Hostname info
+      command: hostname
+      register: hostname_output
+      tags:
+        - Hostname info
+    - name: Display Hostname info
+      debug:
+        msg: "{{ hostname_output.stdout }}"
+      tags:
+        - Hostname info
+
+    - name: Check Current Kernel Version Installed
+      command: uname -r
+      register: kernel_version_output
+      tags:
+        - Current Kernel Version Installed
+    - name: Display Current Kernel Version Installed
+      debug:
+        msg: "{{ kernel_version_output.stdout }}"
+      tags:
+        - Current Kernel Version Installed
+
+    - name: Get Current FS Utilization
+      command: df -h
+      register: fs_utilization_output
+      tags:
+        - Current FS Utilization
+    - name: Display Current FS Utilization
+      debug:
+        msg: "{{ fs_utilization_output.stdout }}"
+      tags:
+        - Current FS Utilization
+
+    - name: Get fstab details
+      command: cat /etc/fstab
+      register: fstab_output
+      tags:
+        - Fstab detail
+    - name: Display Fstab detail
+      debug:
+        msg: "{{ fstab_output.stdout }}"
+      tags:
+        - Fstab detail
+
+    - name: List available disks
+      command: lsblk
+      register: disks_output
+      tags:
+        - Disks available
+    - name: Display Disks available
+      debug:
+        msg: "{{ disks_output.stdout }}"
+      tags:
+        - Disks available
+
+    - name: Check Memory and swap
+      command: free -h
+      register: memory_output
+      tags:
+        - Memory and swap
+    - name: Display memory and swap
+      debug:
+        msg: "{{ memory_output.stdout }}"
+      tags:
+        - Memory and swap
+
+    - name: Display passwd and group files
+      shell: |
+        cat /etc/passwd && cat /etc/group
+      register: passwd_and_group_output
+      tags:
+        - passwd group
+
+    - name: Display passwd group
+      debug:
+        msg: "{{ passwd_and_group_output.stdout }}"
+      tags:
+        - passwd group
+
+    - name: Get Redhat release (Only on RedHat)
+      command: cat /etc/redhat-release
+      register: redhat_release_output
+      #ignore_errors: yes 
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Redhat Release
+    - name: Display Redhat release
+      debug:
+        msg: "{{ redhat_release_output.stdout | default('Not applicable') }}"
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Redhat Release
+
+    - name: system build date
+      shell: rpm -qi basesystem | grep "Install Date"
+      register: install_date_output
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+       - System Build Date
+
+    - name:  System Build Date
+      debug:
+       msg: "Install Date of basesystem package: {{ install_date_output.stdout }}"
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+       - System Build Date
+
+    - name: Check Satellite Subscription Status (Only on RedHat)
+      command: subscription-manager status
+      register: satellite_status_output
+      #ignore_errors: yes  
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Satellite Subscription Status
+    - name: Display Satellite Subscription Status
+      debug:
+        msg: "{{ satellite_status_output.stdout | default('Not applicable') }}"
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Satellite Subscription Status
+
+    - name: Check Nimbus status (Only on RedHat)
+      command: systemctl status nimbus
+      register: nimbus_status_output
+      #ignore_errors: yes
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Nimbus status
+    - name: Display Nimbus status
+      debug:
+        msg: "{{ nimbus_status_output.stdout | default('Not applicable') }}"
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Nimbus status
+
+    - name: Check Networker status (Only on RedHat)
+      command: systemctl status networker
+      register: networker_status_output
+      ignore_errors: yes
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Networker status
+    - name: Display Networker status
+      debug:
+        msg: "{{ networker_status_output.stdout | default('Not applicable') }}"
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Networker status
+
+    - name: List installed kernels (Only on RedHat)
+      command: rpm -q kernel
+      register: kernels_output
+      ignore_errors: yes
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Kernels installed
+    - name: Display Kernels installed
+      debug:
+        msg: "{{ kernels_output.stdout | default('Not applicable') }}"
+      when: ansible_facts['distribution'] == 'RedHat'
+      tags:
+        - Kernels installed
+
+    - name: List running services
+      command: systemctl list-units --type=service --state=running
+      register: running_services_output
+      tags:
+        - Running services
+    - name: Display Running services
+      debug:
+        msg: "{{ running_services_output.stdout }}"
+      tags:
+        - Running services
+
+    - name: List stopped services
+      command: systemctl list-units --type=service --state=stopped
+      register: stopped_services_output
+      tags:
+        - Stopped services
+    - name: Display stopped services
+      debug:
+        msg: "{{ stopped_services_output.stdout }}"
+      tags:
+        - Stopped services
